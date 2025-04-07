@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gates of NAVIBET</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to bottom, #1a1a1a, #000);
+      color: white;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background-color: #222;
+    }
+    .ui {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    .ui h1 {
+      font-size: 32px;
+      color: #ffd700;
+      text-shadow: 0 0 10px #fff;
+    }
+    .ui input, .ui button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+    .ui button {
+      background: #ffd700;
+      color: #000;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="ui">
+    <h1>Gates of NAVIBET</h1>
+    <input type="number" id="betAmount" placeholder="Valor da aposta (R$)" />
+    <br>
+    <button onclick="startGame()">Girar</button>
+    <p id="result"></p>
+  </div>
+  <canvas id="slotCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById("slotCanvas");
+    const ctx = canvas.getContext("2d");
+    const resultText = document.getElementById("result");
+    const symbols = ["⚡", "🔱", "💎", "👑", "🔥", "⭐"];
+
+    const columns = 6;
+    const rows = 5;
+    const symbolSize = 100;
+
+    let grid = Array(columns).fill().map(() => Array(rows).fill(""));
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let x = 0; x < columns; x++) {
+        for (let y = 0; y < rows; y++) {
+          ctx.fillStyle = "#fff";
+          ctx.font = "64px Orbitron";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(grid[x][y], x * symbolSize + 150, y * symbolSize + 100);
+        }
+      }
+    }
+
+    function randomSymbol() {
+      return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function fillGridRandomly() {
+      for (let x = 0; x < columns; x++) {
+        for (let y = 0; y < rows; y++) {
+          grid[x][y] = randomSymbol();
+        }
+      }
+    }
+
+    function startGame() {
+      const bet = parseFloat(document.getElementById("betAmount").value);
+      if (isNaN(bet) || bet <= 0) {
+        alert("Digite um valor válido para apostar.");
+        return;
+      }
+
+      resultText.textContent = "Girando...";
+      let spins = 10;
+
+      const spinInterval = setInterval(() => {
+        fillGridRandomly();
+        drawGrid();
+        spins--;
+        if (spins <= 0) {
+          clearInterval(spinInterval);
+          checkResult(bet);
+        }
+      }, 100);
+    }
+
+    function checkResult(bet) {
+      let matches = 0;
+      for (let y = 0; y < rows; y++) {
+        let row = grid.map(col => col[y]);
+        let symbolCount = {};
+        row.forEach(s => symbolCount[s] = (symbolCount[s] || 0) + 1);
+        for (let symbol in symbolCount) {
+          if (symbolCount[symbol] >= 3) {
+            matches++;
+          }
+        }
+      }
+
+      if (matches > 0) {
+        const winnings = bet * matches * 1.5;
+        resultText.textContent = `Parabéns! Você ganhou R$ ${winnings.toFixed(2)}!`;
+      } else {
+        resultText.textContent = "Nenhum ganho nesta rodada.";
+      }
+    }
+
+    fillGridRandomly();
+    drawGrid();
+  </script>
+</body>
+</html>
